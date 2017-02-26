@@ -15,7 +15,6 @@ import numpy as np
 from scipy.ndimage.measurements import label
 from itertools import chain
 
-
 myCar = Car()
 
 h,w = 720, 1280
@@ -32,7 +31,6 @@ classifier = get_conv(heatmapping = False)
 classifier.load_weights('./output/model_heat.hdf5')
 
 
-# Done. 
 def unet_region_proposal(img):
     # use unet model on input img
     img = img.astype(np.uint8)
@@ -79,6 +77,7 @@ def search_strategy(bboxes):
     
     for b in bboxes: 
         b = np.array(b).flatten()
+        
         sides = sorted([b[2]-b[0], b[3]-b[1]])
         α, β = sides[0], sides[1]
         size = 10
@@ -102,7 +101,7 @@ def search_strategy(bboxes):
         y2 = y1+np.tile([α],size*2)
 
         valids = []
-        for i in np.arange(x1.shape[0]):
+        for i in np.arange(x1.shape[0]): 
             if all([x1[i] >= 0, y1[i] >=h/2, x2[i] <= w, y2[i] <= h]):
                 valids.append(i)
         sw = [((x1[i],y1[i]), (x2[i],y2[i])) for i in valids]
@@ -113,10 +112,20 @@ def search_strategy(bboxes):
 
 
 def classifer_bboxes(img, unet_bboxes):
+    global myCar
+    # if car is detected in the previous frame, search that area too.
+
+    if myCar.detected and len(myCar.bboxes)>0:
+        
+        for b in [myCar.bboxes[-1]]: 
+            unet_bboxes.append(tuple(b))
     
     # show where I want to search for cars. 
     img_searchwindows = np.copy(img.astype(np.uint8))
     img_heatmap = np.zeros((h,w))
+    
+    print("myCar.bboxes: {}".format(myCar.bboxes))
+    print("myCar.cars: {}".format(myCar.cars))
     
     if len(unet_bboxes) > 0: 
         windows = search_strategy(unet_bboxes)
@@ -126,7 +135,7 @@ def classifer_bboxes(img, unet_bboxes):
             for xy in window:
                 cv2.rectangle(img_searchwindows, xy[0], xy[1], (104,214,147), 5)
 
-      # flatten the list
+        # flatten the list
       
         windows = list(chain.from_iterable(windows))
       
@@ -141,7 +150,7 @@ def classifer_bboxes(img, unet_bboxes):
 
             # predicts on cropouts
             cropout_pred = classifier.predict(cropout_arr.astype(np.uint8))
-            print(cropout_pred.shape)
+            
             # threshold on prediction score
             threshold = 0.9
 
@@ -154,17 +163,18 @@ def classifer_bboxes(img, unet_bboxes):
                 img_heatmap[x[0][1]:x[1][1],x[0][0]:x[1][0]] += 1
 
     else: 
-      windows = []
+          windows = []
     
     return img_searchwindows, img_heatmap, windows
 
 
 def draw_cars(img, img_heatmap, windows):
+    global myCar
+
     img_car = np.copy(img.astype(np.uint8))
     labels, n_cars = label(img_heatmap)
     
     bboxes = []
-    count = 0
 
     if n_cars > 0: 
 
@@ -177,13 +187,15 @@ def draw_cars(img, img_heatmap, windows):
             if ((np.max(y)-np.min(y)>50) & (np.max(x)-np.min(x)>50)):
                 bbox = ((np.min(x), np.min(y)), (np.max(x), np.max(y)))
                 bboxes.append(bbox)
-                cv2.rectangle(img_car, bbox[0], bbox[1], (41,156,168), 6)
-                count +=1 
-    
+                
+                
+        # First order smoothing technique. 
+        new_bboxes = myCar.first_order_smooth(bboxes)
 
-        myCar.detected = True
-        myCar.n_cars.append(count)
-        myCar.bboxes.append(bboxes)
+        for bbox in new_bboxes:
+            cv2.rectangle(img_car, bbox[0], bbox[1], (41,156,168), 6)
+
+    count = myCar.n_cars
 
     return img_car, count
 
