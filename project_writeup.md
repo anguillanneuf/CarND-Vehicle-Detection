@@ -8,6 +8,7 @@
 *`classifer.py`: contains my CNN classifier model  
 *`helper.py`: contains functions such as `draw_cars()` for my pipeline  
 *`pipeline.py`: short script to run my pipeline  
+*`model_steps.ipynb`: code used to process training images and train both the U-Net model and the CNN classifier
 *`writeup_template.md`: You are reading it now :)  
 
 ---
