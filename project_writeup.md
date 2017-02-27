@@ -57,7 +57,7 @@ I used 500 images that contain either cars or trucks from the [Udacity training 
 
 I stopped after 12 hours of training using batch of 10 on a CPU instance on AWS, which put me at 11 epochs and a dice coefficient of 0.44, compared to 0.57 for Marko.  
 
-Dice coefficient is what the model tries to maximize, so the negative dice coefficient is what the model tries to minimize. Dice coefficient measure how much pixels from two bounding boxes overlap by the ratio of twice the overlap plus one over the total area covered.  
+Dice coefficient is what the model tries to maximize, so the negative dice coefficient is what the model tries to minimize. Dice coefficient measures how much pixels from the true and predicted bounding boxes overlap, by calculating the ratio of two times the overlap plus one over the area covered by both the true and predicted bounding boxes.  
 
 
 ####3. Describe how (and identify where in your code) you trained a classifier. 
