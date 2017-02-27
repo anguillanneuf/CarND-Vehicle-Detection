@@ -1,6 +1,16 @@
 **Vehicle Detection Project**
 
 ---
+**Project Files**
+
+*`Car.py`: contains my Class Car definition  
+*`unet.py`:  contains my U-Net region proposal model  
+*`classifer.py`: contains my CNN classifier model  
+*`helper.py`: contains functions such as `draw_cars()` for my pipeline  
+*`pipeline.py`: short script to run my pipeline  
+*`writeup_template.md`: You are reading it now :)  
+
+---
 
 **Vehicle Detection Project**
 
