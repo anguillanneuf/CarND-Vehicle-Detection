@@ -7,25 +7,25 @@ Created on Sat Feb 11 11:05:46 2017
 """
 
 from helper import * 
-import cv2
-from moviepy.editor import VideoFileClip
-import matplotlib.image as mpimg
-import os
 
-global a
-a = 0
+from moviepy.editor import VideoFileClip
+#import matplotlib.image as mpimg
+#import os
+
+#global a
+#a = 0
 
 def process_image(img):
     global a
     
-    # diag1-2: unet region proposals and bounding boxes
+    # diag1-2: unet region proposals and unet bounding boxes
     img_unet, img_unet_bboxes, unet_bboxes = unet_region_proposal(img)
     
     
-    # diag3-4: determine search windows and cars
+    # diag3-4: determine search windows and if they contain cars
     img_searchwindows, img_heatmap, windows = classifer_bboxes(img, unet_bboxes)
 
-    # diag5: output
+    # diag5: image with bounding boxes drawn on cars
     img_cars, count = draw_cars(img, img_heatmap, windows)
 
     # info
@@ -36,22 +36,22 @@ def process_image(img):
                                   img_searchwindows, img_heatmap, 
                                   img_cars, info)
     
-    # save video frames
-    mpimg.imsave(os.path.join('diag_frames', str(a)+'.jpg'), diagScreen)
-
-    a += 1
+#    mpimg.imsave(os.path.join('diag_frames', str(a)+'.jpg'), diagScreen)
+#    a += 1
 
     return diagScreen
  
 
 
 def main():
-    folder = 'diag_frames'
-    if not os.path.exists(folder):
-        os.mkdir(folder)
+#    folder = 'project_video_frames'
+    
+#    if not os.path.exists(folder):
+#        os.mkdir(folder)
     
     project_video_output_fname = 'project_video_output.mp4'
-    clip1 = VideoFileClip("project_video.mp4")
+    
+    clip1 = VideoFileClip("test_video.mp4")
     project_video_output = clip1.fl_image(process_image)
     project_video_output.write_videofile(project_video_output_fname, audio=False)
 
