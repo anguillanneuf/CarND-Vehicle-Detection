@@ -14,17 +14,17 @@ The goals / steps of this project are the following:
 
 [//]: # (Image and Video References)
 [image1]: ./output_images/unet_1epoch.png
-[image9]: ./output_images/unet_11epoch_b.png
-[image2]: ./output_images/unet_11epoch_b.png
-[image3]: ./output_images/step1.png
-[image4]: ./output_images/step2.png
-[image5]: ./output_images/step3.png
-[image6]: ./output_images/step4.png
-[image7]: ./output_images/step5.png
-[image8]: ./output_images/step6.png
-[image10]: ./output_images/43.png
-[image11]: ./output_images/597.png
-[image12]: ./output_images/976.png
+[image2]: ./output_images/unet_9epochs.png
+[image3]: ./output_images/unet_11epochs.png
+[image4]: ./output_images/step1.png
+[image5]: ./output_images/step2.png
+[image6]: ./output_images/step3.png
+[image7]: ./output_images/step4.png
+[image8]: ./output_images/step5.png
+[image9]: ./output_images/step6.png
+[image10]: ./output_images/43.jpg
+[image11]: ./output_images/597.jpg
+[image12]: ./output_images/976.jpg
 [video1]: ./project_video_output.mp4
 
 ---
@@ -41,8 +41,8 @@ The code for this step is contained Section II of `sandbox_model_writeup.ipynb`.
 I used 500 images that contain either cars or trucks from the [Udacity training data](https://github.com/udacity/self-driving-car/tree/master/annotations). Here are some examples of how well the model does after 1, 9, 11 epochs:  
 
 ![1 epoch][image1]
-![9 epcohs][image9]
-![11 epochs][image2]
+![9 epcohs][image2]
+![11 epochs][image3]
 
 I stopped after 12 hours of training using batch of 10 on a CPU instance on AWS, which put me at 11 epochs and a dice coefficient of 0.44, compared to 0.57 for Marko.  
 
@@ -60,9 +60,9 @@ I used the square training images provided for this assignment for training. Aft
 
 ####1. Describe how (and identify where in your code) you implemented a sliding window search.  How did you decide what scales to search and how much to overlap windows?
 
-![unet region proposal][image3]
-![unet bounding boxes][image4]
-![sliding windows][image5]
+![unet region proposal][image4]
+![unet bounding boxes][image5]
+![sliding windows][image6]
 
 `helper.py` contains the code I implemented for the sliding window search, which is the step after I know where I want to search for cars in an image, as proposed by my U-Net model. Since my region proposals are more or less in the correct area, my sliding windows simply slide across the proposed region, with some adjustment to its relative and absolute height.  
 
@@ -100,4 +100,6 @@ My bounding boxes are especially jittery despite the fact that I have applied a 
 
 > Here is how my smoothing works: if bounding boxes are proposed for my current frame, I will try to insert each of them to my existing list of cars by calculating the distances between the new centers and the old centers; the ones that get inserted first get smoothed (line 62-256 `Car.py`) and then inserted, the ones that can't be inserted start a new car list, and finally, old car lists that don't get appended get discarded. While my `Car.cars` keeps track of all cars, `Car.true_cars` is used for plotting and has tuples of at least length 3, which corresponds to 3 consecutive detections in 3 continuous frames.  
 
-I can see how a better U-Net model will make my video better. If not, I can relax my logic above and consider 3 consecutive detections in 3 non-continuous frames. 
+(Perhaps I can relax my logic above and consider 3 consecutive detections in 3 non-continuous frames...)  
+
+I can see how a better U-Net model will make my video better. Currently, my pipeline can fail if the proposed bounding boxes by my U-Net model are too small (which makes the search window strategy too manual) or too bouncy (which causes the bounding boxes centers to jump from frame to frame too much). On one hand, I would really love to have a better deep learning model to do the task. On the other, I realize that it would mean even stronger dependency of my pipeline on my U-Net region proposals.  Perhaps the ideal is to use multiple models.    
